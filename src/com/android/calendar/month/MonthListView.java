@@ -21,6 +21,7 @@ import android.graphics.Rect;
 import android.os.SystemClock;
 import android.text.format.Time;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
 import android.view.View;
@@ -44,10 +45,15 @@ public class MonthListView extends ListView {
     private static int FLING_VELOCITY_DIVIDER = 500;
     private static int FLING_TIME = 1000;
 
+
+    public static final int MOTION_EVENT_MOVE_LISTBLOCKED = MotionEvent.ACTION_MOVE *-1;
+
     // disposable variable used for time calculations
     protected Time mTempTime;
     private long mDownActionTime;
     private final Rect mFirstViewRect = new Rect();
+
+    public boolean mBlockScroll = false;
 
     Context mListContext;
 
@@ -89,6 +95,16 @@ public class MonthListView extends ListView {
                 FLING_VELOCITY_DIVIDER *= mScale;
             }
         }
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        if(mBlockScroll && ev.getAction() == MotionEvent.ACTION_MOVE){
+          //  return true;
+            ev.setAction(MOTION_EVENT_MOVE_LISTBLOCKED);
+            super.dispatchTouchEvent(ev);
+        }
+        return super.dispatchTouchEvent(ev);
     }
 
     @Override
@@ -193,5 +209,13 @@ public class MonthListView extends ListView {
             return -1;
         }
         return child.getFirstJulianDay() + SimpleDayPickerFragment.DAYS_PER_WEEK - 1;
+    }
+
+    public void blockScroll(){
+        mBlockScroll=true;
+    }
+
+    public void unblockScroll(){
+        mBlockScroll=false;
     }
 }

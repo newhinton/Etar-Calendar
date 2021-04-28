@@ -263,7 +263,7 @@ public class SimpleWeeksAdapter extends BaseAdapter implements OnTouchListener {
                 Log.d(TAG, "Touched day at Row=" + view.mWeek + " day=" + day.toString());
             }
             if (day != null) {
-                onDayTapped(day);
+                onDayTapped(day, null);
             }
             return true;
         }
@@ -275,7 +275,7 @@ public class SimpleWeeksAdapter extends BaseAdapter implements OnTouchListener {
      *
      * @param day The day that was tapped
      */
-    protected void onDayTapped(Time day) {
+    protected void onDayTapped(Time day, Time end) {
         day.hour = mSelectedDay.hour;
         day.minute = mSelectedDay.minute;
         day.second = mSelectedDay.second;
@@ -294,9 +294,9 @@ public class SimpleWeeksAdapter extends BaseAdapter implements OnTouchListener {
         }
     }
 
-    ListView mListView;
+    MonthListView mListView;
 
-    public void setListView(ListView lv) {
+    public void setListView(MonthListView lv) {
         mListView = lv;
     }
 }
