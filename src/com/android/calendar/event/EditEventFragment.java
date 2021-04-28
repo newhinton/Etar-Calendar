@@ -71,6 +71,7 @@ import com.android.calendar.DeleteEventHelper;
 import com.android.calendar.Utils;
 import com.android.colorpicker.ColorPickerSwatch.OnColorSelectedListener;
 import com.android.colorpicker.HsvColorComparator;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -332,6 +333,7 @@ public class EditEventFragment extends Fragment implements EventHandler, OnColor
             startQuery();
         }
 
+        mUseCustomActionBar=false;
         if (mUseCustomActionBar) {
             View actionBarButtons = inflater.inflate(R.layout.edit_event_custom_actionbar,
                     new LinearLayout(mActivity), false);
@@ -342,7 +344,21 @@ public class EditEventFragment extends Fragment implements EventHandler, OnColor
             ActionBar.LayoutParams layout = new ActionBar.LayoutParams(ActionBar.LayoutParams.MATCH_PARENT, ActionBar.LayoutParams.MATCH_PARENT);
             mActivity.getSupportActionBar().setCustomView(actionBarButtons, layout);
         }
+        mActivity.getSupportActionBar().hide();
+        FloatingActionButton fab = view.findViewById(R.id.saveFab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {saveEvent();}
+        });
 
+
+        final View cancel = view.findViewById(R.id.cancel_imageview);
+        cancel.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                mOnDone.setDoneCode(Utils.DONE_REVERT);
+                mOnDone.run();
+            }
+        });
         return view;
     }
 
@@ -395,7 +411,7 @@ public class EditEventFragment extends Fragment implements EventHandler, OnColor
         super.onCreateOptionsMenu(menu, inflater);
 
         if (!mUseCustomActionBar) {
-            inflater.inflate(R.menu.edit_event_title_bar, menu);
+           // inflater.inflate(R.menu.edit_event_title_bar, menu);
         }
     }
 
@@ -414,31 +430,35 @@ public class EditEventFragment extends Fragment implements EventHandler, OnColor
      */
     private boolean onActionBarItemSelected(int itemId) {
         if (itemId == R.id.action_done) {
-            if (EditEventHelper.canModifyEvent(mModel) || EditEventHelper.canRespond(mModel)) {
-                if (mView != null && mView.prepareForSave()) {
-                    if (mModification == Utils.MODIFY_UNINITIALIZED) {
-                        mModification = Utils.MODIFY_ALL;
-                    }
-                    mOnDone.setDoneCode(Utils.DONE_SAVE | Utils.DONE_EXIT);
-                    mOnDone.run();
-                } else {
-                    mOnDone.setDoneCode(Utils.DONE_REVERT);
-                    mOnDone.run();
-                }
-            } else if (EditEventHelper.canAddReminders(mModel) && mModel.mId != -1
-                    && mOriginalModel != null && mView.prepareForSave()) {
-                saveReminders();
-                mOnDone.setDoneCode(Utils.DONE_EXIT);
-                mOnDone.run();
-            } else {
-                mOnDone.setDoneCode(Utils.DONE_REVERT);
-                mOnDone.run();
-            }
+            saveEvent();
         } else if (itemId == R.id.action_cancel) {
             mOnDone.setDoneCode(Utils.DONE_REVERT);
             mOnDone.run();
         }
         return true;
+    }
+
+    private void saveEvent(){
+        if (EditEventHelper.canModifyEvent(mModel) || EditEventHelper.canRespond(mModel)) {
+            if (mView != null && mView.prepareForSave()) {
+                if (mModification == Utils.MODIFY_UNINITIALIZED) {
+                    mModification = Utils.MODIFY_ALL;
+                }
+                mOnDone.setDoneCode(Utils.DONE_SAVE | Utils.DONE_EXIT);
+                mOnDone.run();
+            } else {
+                mOnDone.setDoneCode(Utils.DONE_REVERT);
+                mOnDone.run();
+            }
+        } else if (EditEventHelper.canAddReminders(mModel) && mModel.mId != -1
+                && mOriginalModel != null && mView.prepareForSave()) {
+            saveReminders();
+            mOnDone.setDoneCode(Utils.DONE_EXIT);
+            mOnDone.run();
+        } else {
+            mOnDone.setDoneCode(Utils.DONE_REVERT);
+            mOnDone.run();
+        }
     }
 
     private void saveReminders() {

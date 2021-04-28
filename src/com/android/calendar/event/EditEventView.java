@@ -70,6 +70,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 import android.widget.TimePicker;
+import android.content.res.ColorStateList;
 
 import com.android.calendar.CalendarEventModel;
 import com.android.calendar.CalendarEventModel.Attendee;
@@ -988,6 +989,11 @@ public class EditEventView implements View.OnClickListener, DialogInterface.OnCa
         } else {
             setSpinnerBackgroundColor(displayColor);
         }
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+            mActivity.getWindow().setStatusBarColor(displayColor);
+            mView.findViewById(R.id.saveFab).setBackgroundTintList(ColorStateList.valueOf(displayColor));
+        }
     }
 
     private void setSpinnerBackgroundColor(int displayColor) {
@@ -995,6 +1001,10 @@ public class EditEventView implements View.OnClickListener, DialogInterface.OnCa
             mCalendarSelectorWrapper.setBackgroundColor(displayColor);
         } else {
             mCalendarSelectorGroup.setBackgroundColor(displayColor);
+        }
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+            mActivity.getWindow().setStatusBarColor(displayColor);
         }
     }
 
@@ -1457,7 +1467,7 @@ public class EditEventView implements View.OnClickListener, DialogInterface.OnCa
             mColorPickerNewEvent.setVisibility(View.VISIBLE);
             mColorPickerExistingEvent.setVisibility(View.VISIBLE);
         } else {
-            mColorPickerNewEvent.setVisibility(View.INVISIBLE);
+            mColorPickerNewEvent.setVisibility(View.GONE);
             mColorPickerExistingEvent.setVisibility(View.GONE);
         }
     }
@@ -1526,6 +1536,8 @@ public class EditEventView implements View.OnClickListener, DialogInterface.OnCa
         prepareReminders();
         prepareAvailability();
         prepareAccess();
+
+
     }
 
     /**
