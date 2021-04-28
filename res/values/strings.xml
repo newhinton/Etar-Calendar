@@ -801,5 +801,6 @@
 
     <string name="offline_account_name">Offline Calendar</string>
     <string name="unsaved_event">Event not saved!</string>
+    <string name="navigation_drawer_it_is_weekday">It\'s</string>
 
 </resources>

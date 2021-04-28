@@ -48,5 +48,8 @@
         android:layout_height="match_parent"
         android:layout_gravity="start"
         android:fitsSystemWindows="true"
-        app:menu="@menu/calendar_view" />
+        style="@style/Widget.Custom.NavigationView"
+        app:headerLayout="@layout/navigation_drawer_header"
+        app:menu="@menu/calendar_view"/>
+
 </androidx.drawerlayout.widget.DrawerLayout>
