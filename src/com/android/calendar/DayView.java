@@ -36,6 +36,7 @@ import android.graphics.Paint;
 import android.graphics.Paint.Align;
 import android.graphics.Paint.Style;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -100,7 +101,7 @@ import ws.xsoh.etar.R;
  */
 public class DayView extends View implements View.OnCreateContextMenuListener,
         ScaleGestureDetector.OnScaleGestureListener, View.OnClickListener, View.OnLongClickListener
-        {
+{
     private static String TAG = "DayView";
     private static boolean DEBUG = false;
     private static boolean DEBUG_SCALING = false;
@@ -147,9 +148,9 @@ public class DayView extends View implements View.OnCreateContextMenuListener,
     protected Context mContext;
 
     private static final String[] CALENDARS_PROJECTION = new String[] {
-        Calendars._ID,          // 0
-        Calendars.CALENDAR_ACCESS_LEVEL, // 1
-        Calendars.OWNER_ACCOUNT, // 2
+            Calendars._ID,          // 0
+            Calendars.CALENDAR_ACCESS_LEVEL, // 1
+            Calendars.OWNER_ACCOUNT, // 2
     };
     private static final int CALENDARS_INDEX_ACCESS_LEVEL = 1;
     private static final int CALENDARS_INDEX_OWNER_ACCOUNT = 2;
@@ -218,9 +219,9 @@ public class DayView extends View implements View.OnCreateContextMenuListener,
     private final Runnable mSetClick = new Runnable() {
         @Override
         public void run() {
-                mClickedEvent = mSavedClickedEvent;
-                mSavedClickedEvent = null;
-                DayView.this.invalidate();
+            mClickedEvent = mSavedClickedEvent;
+            mSavedClickedEvent = null;
+            DayView.this.invalidate();
         }
     };
 
@@ -369,11 +370,11 @@ public class DayView extends View implements View.OnCreateContextMenuListener,
     // This is the standard height of an allday event with no restrictions
     private static int SINGLE_ALLDAY_HEIGHT = 34;
     /**
-    * This is the minimum desired height of a allday event.
-    * When unexpanded, allday events will use this height.
-    * When expanded allDay events will attempt to grow to fit all
-    * events at this height.
-    */
+     * This is the minimum desired height of a allday event.
+     * When unexpanded, allday events will use this height.
+     * When expanded allDay events will attempt to grow to fit all
+     * events at this height.
+     */
     private static float MIN_UNEXPANDED_ALLDAY_EVENT_HEIGHT = 28.0F; // in pixels
     /**
      * This is how big the unexpanded allday height is allowed to be.
@@ -425,14 +426,19 @@ public class DayView extends View implements View.OnCreateContextMenuListener,
     // smallest height to draw an event with
     private static float MIN_EVENT_HEIGHT = 24.0F; // in pixels
     private static int CALENDAR_COLOR_SQUARE_SIZE = 10;
-    private static int EVENT_RECT_TOP_MARGIN = 1;
-    private static int EVENT_RECT_BOTTOM_MARGIN = 0;
-    private static int EVENT_RECT_LEFT_MARGIN = 1;
-    private static int EVENT_RECT_RIGHT_MARGIN = 0;
+
+    private static int EVENT_RECT_ROUNDING = 40;
+    private static float EVENT_RECT_SHADOW_INTENSITY = 0.0f;
+    private static float EVENT_RECT_SHADOW_X = 1.0f;
+    private static float EVENT_RECT_SHADOW_Y = 2.0f;
+    private static int EVENT_RECT_TOP_MARGIN = 3;
+    private static int EVENT_RECT_BOTTOM_MARGIN = 3;
+    private static int EVENT_RECT_LEFT_MARGIN = 3;
+    private static int EVENT_RECT_RIGHT_MARGIN = 3;
     private static int EVENT_RECT_STROKE_WIDTH = 2;
-    private static int EVENT_TEXT_TOP_MARGIN = 2;
+    private static int EVENT_TEXT_TOP_MARGIN = 4;
     private static int EVENT_TEXT_BOTTOM_MARGIN = 2;
-    private static int EVENT_TEXT_LEFT_MARGIN = 6;
+    private static int EVENT_TEXT_LEFT_MARGIN = 80;
     private static int EVENT_TEXT_RIGHT_MARGIN = 6;
     private static int ALL_DAY_EVENT_RECT_BOTTOM_MARGIN = 1;
     private static int EVENT_ALL_DAY_TEXT_TOP_MARGIN = EVENT_TEXT_TOP_MARGIN;
@@ -445,6 +451,8 @@ public class DayView extends View implements View.OnCreateContextMenuListener,
     private static int EVENT_SQUARE_WIDTH = 10;
     private static int EVENT_LINE_PADDING = 4;
     private static int NEW_EVENT_HINT_FONT_SIZE = 12;
+
+
 
     private static int mPressedColor;
     private static int mClickedColor;
@@ -659,7 +667,7 @@ public class DayView extends View implements View.OnCreateContextMenuListener,
     private final String mNewEventHintString;
 
     public DayView(Context context, CalendarController controller,
-            ViewSwitcher viewSwitcher, EventLoader eventLoader, int numDays) {
+                   ViewSwitcher viewSwitcher, EventLoader eventLoader, int numDays) {
         super(context);
         mContext = context;
         initAccessibilityVariables();
@@ -772,7 +780,7 @@ public class DayView extends View implements View.OnCreateContextMenuListener,
         mEventGeometry.setHourGap(HOUR_GAP);
         mEventGeometry.setCellMargin(DAY_GAP);
         mLongPressItems = new CharSequence[] {
-            mResources.getString(R.string.new_event_dialog_option)
+                mResources.getString(R.string.new_event_dialog_option)
         };
         mLongPressTitle = mResources.getString(R.string.new_event_dialog_label);
         mDeleteEventHelper = new DeleteEventHelper(context, null, false /* don't exit when done */);
@@ -899,7 +907,7 @@ public class DayView extends View implements View.OnCreateContextMenuListener,
         Resources.Theme dialogTheme = getResources().newTheme();
         dialogTheme.applyStyle(android.R.style.Theme_Dialog, true);
         TypedArray ta = dialogTheme.obtainStyledAttributes(new int[] {
-            android.R.attr.windowBackground });
+                android.R.attr.windowBackground });
         mPopup.setBackgroundDrawable(ta.getDrawable(0));
         ta.recycle();
 
@@ -2415,7 +2423,7 @@ public class DayView extends View implements View.OnCreateContextMenuListener,
     }
 
     private void drawCurrentTimeLine(Rect r, final int day, final int top, Canvas canvas,
-            Paint p) {
+                                     Paint p) {
         r.left = computeDayLeftPosition(day) - CURRENT_TIME_LINE_SIDE_BUFFER + 1;
         r.right = computeDayLeftPosition(day + 1) + CURRENT_TIME_LINE_SIDE_BUFFER + 1;
 
@@ -2479,10 +2487,13 @@ public class DayView extends View implements View.OnCreateContextMenuListener,
 
             // Draw the highlight on the grid
             p.setColor(mCalendarGridAreaSelected);
-            r.top += HOUR_GAP;
-            r.right -= DAY_GAP;
-            p.setAntiAlias(false);
-            canvas.drawRect(r, p);
+            r.top += HOUR_GAP+EVENT_RECT_TOP_MARGIN;
+            r.right -= DAY_GAP+EVENT_RECT_RIGHT_MARGIN;
+            r.left += EVENT_RECT_LEFT_MARGIN;
+            r.bottom -= EVENT_RECT_BOTTOM_MARGIN;
+            p.setAntiAlias(true);
+            //canvas.drawRect(r, p);
+            canvas.drawRoundRect(new RectF(r), EVENT_RECT_ROUNDING, EVENT_RECT_ROUNDING, p);
 
             // Draw a "new event hint" on top of the highlight
             // For the week view, show a "+", for day view, show "+ New event"
@@ -2503,7 +2514,7 @@ public class DayView extends View implements View.OnCreateContextMenuListener,
                 p.setStyle(Paint.Style.FILL);
                 p.setTextSize(NEW_EVENT_HINT_FONT_SIZE);
                 p.setTextAlign(Paint.Align.LEFT);
-                p.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                //p.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
                 canvas.drawText(mNewEventHintString, r.left + EVENT_TEXT_LEFT_MARGIN,
                         r.top + Math.abs(p.getFontMetrics().ascent) + EVENT_TEXT_TOP_MARGIN , p);
             }
@@ -2516,8 +2527,8 @@ public class DayView extends View implements View.OnCreateContextMenuListener,
         int hourStep = (mHoursTextHeight + totCellHeight - 1)/ totCellHeight;
         int i = mFirstHour;
         if (   (mFirstHourOffset < mHoursTextHeight / 2)
-            && (mAlldayHeight == 0)
-            && (mNumDays == 1))
+                && (mAlldayHeight == 0)
+                && (mNumDays == 1))
         {
             i += hourStep;
         }
@@ -2741,7 +2752,7 @@ public class DayView extends View implements View.OnCreateContextMenuListener,
     }
 
     static Event getNewEvent(int julianDay, long utcMillis,
-            int minutesSinceMidnight) {
+                             int minutesSinceMidnight) {
         Event event = Event.newInstance();
         event.startDay = julianDay;
         event.endDay = julianDay;
@@ -2822,7 +2833,7 @@ public class DayView extends View implements View.OnCreateContextMenuListener,
      * Return the layout for a numbered event. Create it if not already existing
      */
     private StaticLayout getEventLayout(StaticLayout[] layouts, int i, Event event, Paint paint,
-            Rect r) {
+                                        Rect r) {
         if (i < 0 || i >= layouts.length) {
             return null;
         }
@@ -2836,8 +2847,8 @@ public class DayView extends View implements View.OnCreateContextMenuListener,
             if (event.title != null) {
                 // MAX - 1 since we add a space
                 bob.append(drawTextSanitizer(event.title.toString(), MAX_EVENT_TEXT_LEN - 1));
-                bob.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), 0,
-                            bob.length(), 0);
+                //bob.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), 0,
+                //            bob.length(), 0);
                 bob.append(' ');
             }
             if (event.location != null) {
@@ -3459,17 +3470,17 @@ public class DayView extends View implements View.OnCreateContextMenuListener,
     }
 
     private Rect drawEventRect(Event event, Canvas canvas, Paint p, Paint eventTextPaint,
-            int visibleTop, int visibleBot) {
+                               int visibleTop, int visibleBot) {
         // Draw the Event Rect
         Rect r = mRect;
         r.top = Math.max((int) event.top + EVENT_RECT_TOP_MARGIN, visibleTop);
         r.bottom = Math.min((int) event.bottom - EVENT_RECT_BOTTOM_MARGIN, visibleBot);
         r.left = (int) event.left + EVENT_RECT_LEFT_MARGIN;
-        r.right = (int) event.right;
+        r.right = (int) event.right - EVENT_RECT_RIGHT_MARGIN;
 
         int color;
         if (event == mClickedEvent) {
-                color = mClickedColor;
+            color = mClickedColor;
         } else {
             color = event.color;
         }
@@ -3492,7 +3503,7 @@ public class DayView extends View implements View.OnCreateContextMenuListener,
                 break;
         }
 
-        p.setAntiAlias(false);
+        p.setAntiAlias(true);
 
         int floorHalfStroke = (int) Math.floor(EVENT_RECT_STROKE_WIDTH / 2.0f);
         int ceilHalfStroke = (int) Math.ceil(EVENT_RECT_STROKE_WIDTH / 2.0f);
@@ -3505,7 +3516,10 @@ public class DayView extends View implements View.OnCreateContextMenuListener,
         p.setColor(color);
         int alpha = p.getAlpha();
         p.setAlpha(mEventsAlpha);
-        canvas.drawRect(r, p);
+
+        p.setShadowLayer(EVENT_RECT_SHADOW_INTENSITY, EVENT_RECT_SHADOW_X, EVENT_RECT_SHADOW_Y, 0xFF000000);
+        canvas.drawRoundRect(new RectF(r), EVENT_RECT_ROUNDING, EVENT_RECT_ROUNDING, p);
+        p.setShadowLayer(0, 0, 0, 0x00000000);
         p.setAlpha(alpha);
         p.setStyle(Style.FILL);
 
@@ -3527,7 +3541,7 @@ public class DayView extends View implements View.OnCreateContextMenuListener,
 
             if (paintIt) {
                 p.setColor(color);
-                canvas.drawRect(r, p);
+                canvas.drawRoundRect(new RectF(r), EVENT_RECT_ROUNDING, EVENT_RECT_ROUNDING, p);
             }
             p.setAntiAlias(true);
         }
@@ -3578,7 +3592,7 @@ public class DayView extends View implements View.OnCreateContextMenuListener,
     }
 
     private void drawEventText(StaticLayout eventLayout, Rect rect, Canvas canvas, int top,
-            int bottom, boolean center) {
+                               int bottom, boolean center) {
         // drawEmptyRect(canvas, rect, 0xFFFF00FF); // for debugging
 
         int width = rect.right - rect.left;
@@ -3608,7 +3622,7 @@ public class DayView extends View implements View.OnCreateContextMenuListener,
 
         // Use a StaticLayout to format the string.
         canvas.save();
-      //  canvas.translate(rect.left, rect.top + (rect.bottom - rect.top / 2));
+        //  canvas.translate(rect.left, rect.top + (rect.bottom - rect.top / 2));
         int padding = center? (rect.bottom - rect.top - totalLineHeight) / 2 : 0;
         canvas.translate(rect.left, rect.top + padding);
         rect.left = 0;
@@ -3766,9 +3780,9 @@ public class DayView extends View implements View.OnCreateContextMenuListener,
         mAlldayAnimator = getAllDayAnimator();
         mAlldayEventAnimator = getAllDayEventAnimator();
         mMoreAlldayEventsAnimator = ObjectAnimator.ofInt(this,
-                    "moreAllDayEventsTextAlpha",
-                    mShowAllAllDayEvents ? MORE_EVENTS_MAX_ALPHA : 0,
-                    mShowAllAllDayEvents ? 0 : MORE_EVENTS_MAX_ALPHA);
+                "moreAllDayEventsTextAlpha",
+                mShowAllAllDayEvents ? MORE_EVENTS_MAX_ALPHA : 0,
+                mShowAllAllDayEvents ? 0 : MORE_EVENTS_MAX_ALPHA);
 
         // Set up delays and start the animators
         mAlldayAnimator.setStartDelay(mShowAllAllDayEvents ? ANIMATION_SECONDARY_DURATION : 0);
@@ -3893,7 +3907,7 @@ public class DayView extends View implements View.OnCreateContextMenuListener,
             int bottom = mFirstCell;
             if((x < mHoursWidth && y > DAY_HEADER_HEIGHT && y < DAY_HEADER_HEIGHT + mAlldayHeight)
                     || (!mShowAllAllDayEvents && mAnimateDayHeight == 0 && y < bottom &&
-                            y >= bottom - MIN_UNEXPANDED_ALLDAY_EVENT_HEIGHT)) {
+                    y >= bottom - MIN_UNEXPANDED_ALLDAY_EVENT_HEIGHT)) {
                 doExpandAllDayClick();
                 return;
             }
@@ -3936,7 +3950,7 @@ public class DayView extends View implements View.OnCreateContextMenuListener,
             mSelectionMode = SELECTION_HIDDEN;
 
             int yLocation =
-                (int)((mSelectedEvent.top + mSelectedEvent.bottom)/2);
+                    (int)((mSelectedEvent.top + mSelectedEvent.bottom)/2);
             // Y location is affected by the position of the event in the scrolling
             // view (mViewStartY) and the presence of all day events (mFirstCell)
             if (!mSelectedEvent.allDay) {
@@ -4248,8 +4262,8 @@ public class DayView extends View implements View.OnCreateContextMenuListener,
         if (DEBUG_SCALING) {
             float ViewStartHour = mViewStartY / (float) (mCellHeight + DAY_GAP);
             Log.d(TAG, "onScale: mGestureCenterHour:" + mGestureCenterHour + "\tViewStartHour: "
-                       + ViewStartHour + "\tmViewStartY:" + mViewStartY + "\tmCellHeight:"
-                       + mCellHeight + " SpanY:" + detector.getCurrentSpanY());
+                    + ViewStartHour + "\tmViewStartY:" + mViewStartY + "\tmCellHeight:"
+                    + mCellHeight + " SpanY:" + detector.getCurrentSpanY());
         }
 
         computeFirstHour();
@@ -4351,7 +4365,7 @@ public class DayView extends View implements View.OnCreateContextMenuListener,
 
                 return true;
 
-                // This case isn't expected to happen.
+            // This case isn't expected to happen.
             case MotionEvent.ACTION_CANCEL:
                 if (DEBUG) Log.e(TAG, "ACTION_CANCEL");
                 mGestureDetector.onTouchEvent(ev);
@@ -4848,7 +4862,7 @@ public class DayView extends View implements View.OnCreateContextMenuListener,
         }
 
         Utils.setSharedPreference(mContext, GeneralPreferences.KEY_DEFAULT_CELL_HEIGHT,
-            mPreferredCellHeight);
+                mPreferredCellHeight);
         // Clear all click animations
         eventClickCleanup();
         // Turn off redraw
